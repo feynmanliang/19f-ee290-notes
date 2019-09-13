@@ -1,0 +1,185 @@
+\section{9/12/2019}
+
+\subsection{Planted cliques and semidefinite programming}
+
+Recall the matrix $W$ from before, which has $1$s in the top $k \times k$ block, zero on the diagonal, and $\text{Rad}(1/2)$ RVs elsewhere.
+
+Recall the spectral method:
+\begin{align}\label{eq:9-12-orig-spec}
+    \hat{u}_{spec} &= \argmax_{\substack{u \in \RR^n \\ \|u\|^2 = k}} u^\top W u
+\end{align}
+This needs a cleaning step, which we analyzed previously.
+
+How did they come up with this algorithm?
+Can we get more insight by analyzing htis method in a more principled framework?
+Yes, through maximum likelihood!
+
+Consider an alterantive model where within clique we have connection probability $p$ (instead of $1$) and other connections with probability $q$ (instead of $1/2$),
+where $p \gg q$.
+\begin{align}\label{eq:9-12-mle}
+    \hat{u}_{MLE} &= \argmax_{\substack{u \in \{0,1\}^n \\ \sum_i u_i = k}} u^\top W u
+\end{align}
+
+From this, we see that the spectral method is a continuous relaxation of the
+MLE integer program. To make this more precise, consider the SDP
+\begin{align}\label{eq:9-12-sdp-spec}
+    \hat{X}_{spec} &= \argmax_{\substack{X \succeq 0 \\ \Tr X = k}} \braket{W, X}
+\end{align}
+If we let $X = u u^\top$, then we automatically have $X \succeq 0$ and additionally we have $\Tr X = \|u\|_2^2$. Thus, the feasible set of
+\cref{eq:9-12-orig-spec} is the same as \cref{eq:9-12-sdp-spec}.
+
+How do we know the optima of \cref{eq:9-12-sdp-spec} is attained at a rank $1$ matrix
+$X = u u^\top$? Since $X = \sum_i \lambda_i u_i u_i^\top$ ($\lambda_i \geq 0$) 
+and optima are attained at extremal points, by linearity of $\braket{W,X}$ we can
+put all of the weight on a single $\lambda_i$ corresponding to the top eigenvector
+of $W$.
+
+How can we get \cref{eq:9-12-sdp-spec} closer to \cref{eq:9-12-mle}? Since
+\cref{eq:9-12-mle} is more constrained, we can consider adding more constraints:
+\begin{align}\label{eq:9-12-mle-sdp}
+    \tilde{X}_{MLE} &= \argmax_X \braket{W, X} \\
+    \text{s.t. } & X \succeq 0 \\
+                & \Tr X = k \\
+                & 0 \leq X \leq J \quad\text{entrywise}\\
+                & \braket{X, J} = k^2 \\
+                & \rank(X) = 1
+\end{align}
+where $J = 1 1^\top$.
+
+The solution $X = u u^\top$ where $u \in \{0,1\}^n$, where $u$
+indexes the clique.
+
+Conversely, we need to show that the feasible set coincides with \cref{eq:9-12-mle}.
+If $X \succeq 0$ and $\rank X = 1$, then we can always write
+$X = u u^\top$. The trace constraint now reads $k = \Tr X = \sum_i u_i^2$.
+The third constraint becomes $\braket{X, J} = k^2 \implies (\sum_i u_i)^2 = k^2$.
+
+\begin{proposition}
+    The optima of \cref{eq:9-12-mle-sdp} must satisfy:
+    $u_i \in [-1, 1]$, $\sum u_i^2 = k$, $(\sum_i u_i)^2 = k^2$, 
+    $\{u_i\} \in \{0,1\}^n$ or $\{u_i\} \in \{0, -1\}^n$.
+    
+    In fact, the solution is $u = 1_k$ or $u = -1_k$.
+\end{proposition}
+
+The linear constraints in \cref{eq:9-12-mle-sdp} are fine, but the rank constraints
+are difficult.
+Here is an easier candidate SDP:
+\begin{align}\label{eq:9-12-mle-sdp-relax}
+    \hat{X}_{SDP} &= \argmax_X \braket{W, X} \\
+    \text{s.t. } & X \preceq 0 \\
+                 & X \geq 0 \\
+                 & \Tr X = k \\
+                 & \braket{X, J} = k^2
+\end{align}
+Notice we have dropped the rank constraint as well as the upper entrywise bound.
+
+\begin{theorem}
+    $\exists c > 0$ such that for $k \geq c \sqrt{n}$, \cref{eq:9-12-mle-sdp-relax}
+    has unique maximizer $X^* = 1_k 1_k^\top$ with high probability.
+\end{theorem}
+
+\begin{proof}
+    We first show $X^*$ is a maximizer.
+    \begin{align}
+        \braket{W, X^*} &= 1_k^\top W 1_k = k^2 - k \\
+        \braket{W, X} &= \braket{W + I, X} - \Tr X \\
+        \Tr(I - X) = \Tr X &\leq \braket{J, X} - \Tr(X) \\
+        \underbrace{W + I \leq J}_{X \geq 0} &\implies \braket{J, X} \geq \braket{W + I, X} \\
+        \therefore \Tr(I - X) = \Tr X &\leq k^2 - k
+    \end{align}
+    
+    The harder part is uniqueness. We will develop a general technique called
+    dual certificate / KKT condition.
+    Write the Lagrangian for the optimization problem.
+    Introduce dual variables $S \succeq 0$, $B \geq 0$,
+    $\eta \in \RR$, $\lambda \in \RR$ and 
+    \begin{align}
+        \cL(X, S, B, \eta, \lambda)
+        &= \braket{W, X} + \braket{S, X} + \braket{B, X} + \eta\left(
+            k \Tr(X) + \lambda (k^2 - \braket{X, J}
+        \right)
+    \end{align}
+    Notice
+    \begin{align}
+        \max_{X\text{ feas}} \braket{W, X} &= \max_X \min_{S, B, \eta, \lambda} \cL
+    \end{align}
+    as desired. Since $\cL$ is linear, by Sion's minimax theorem we have
+    \begin{align}
+        \max_X \min_{S, B, \eta, \lambda} \cL
+        &= \min_{S, B, \eta, \lambda} \max_X \cL
+    \end{align}
+    Note $\braket{S,X} = \Tr( S^{1/2} X S^{1/2} ) \geq 0$ is non-negative.
+    $\braket{B, X}$ is also trivially non-negative.
+    
+    \begin{lemma}\label{lem:x-star-unique-maximizer}
+        The following conditions imply $X^*$ is the unique maximizer:
+        \begin{enumerate}
+            \item Stationarity: $W + S + B - \eta I - \lambda J = 0$ (can't improve any more)
+            \item Primal/dual feasibility
+            \item Complementary slackness: $\braket{S, X^*} = 0$ and $\braket{B, X^*} = 0$.
+            \item Uniqueness: $\lambda_{n-1}(S) > 0$ (second smallest eigenvalue of $S$)
+        \end{enumerate}
+        The first three conditions are the ``KKT conditions.'' Together,
+        they guarantee $X$ is a maximizer.
+    \end{lemma}
+    
+    \begin{proof}[Proof of \cref{lem:x-star-unique-maximizer}]
+        \textbf{$X^*$ is a maximizer}: for feasible variables
+        \begin{align}
+            \braket{W, X} &\leq \cL(X, S, B, \eta, \lambda) &&\text{feasible} \\
+            &= \cL(X^*, S, B, \eta, \lambda) &&\text{stationarity} \\
+            &= \braket{W, X^*} &&\text{comp. slackness}
+        \end{align}
+        
+        \textbf{Uniqueness}: Suppose $X'$ satisfies $\braket{W, X'} = \braket{W, X^*}$.
+        Then $\braket{S, X'} = 0$, and
+        $\braket{S, X^*} = 0 \implies 1_k^\top S 1_k = 0 \implies S 1_k = 0$.
+        In other words, $1_k$ is an eignevector with eigenvalue $0$ for $S$.
+        But condition (4) means that $1_k$ is the only eigenvector with eigenvalue
+        $0$, hence $X' = c X^*$ for some $c \in \RR$. But by the
+        constrant $\Tr X = k$, we must have $X' = X^*$.
+    \end{proof}
+    
+    Hence, if we can find $(S, B, \eta, \lambda)$ satisfying \cref{lem:x-star-unique-maximizer}, then we have a certificate that
+    $X^*$ is the unique maximizer.
+    
+    But how can we find this certificate? It's hard in general, but in this
+    case we have an explicit construction.
+    \begin{align}
+        B \geq 0, \quad \eta \in \RR, \quad \lambda \in \RR \\
+        S = \eta I + \lambda J - B - W \succeq 0 \\
+        S 1_k = 0, \quad \braket{B, X^*} = 0, \quad \lambda_{n-1}(S) > 0 \label{eq:9-12-star}
+    \end{align}
+    \begin{align}
+        S 1_k = 0 \implies \eta I_k + \lambda k 1 = B 1_k + W 1_k
+    \end{align}
+    $X^* = 1_k 1_k^\top$. Since we want $\braket{B, X^*} = 0$, we want
+    $B_{ij} = 0$ for $(i,j) \in K \times K$.
+    This implies that $(B 1_k)i = 0$ for $i \in K$.
+    Let $y = W 1_k$.
+    
+    $i$th entry, $i \in K$, of \cref{eq:9-12-star} implies $\eta + k \lambda = (B 1_k)_i + y_i = k-1$. Then, choose $\eta = k - 1 - k \lambda$
+    
+    Now for $i \not\in K$, \cref{eq:9-12-star} implies $\lambda k = (B 1_k)_i + y_i$.
+    Construct $B = 1_k b^\top + b 1_k^\top$ for some $b \in \RR^n$ such
+    that $b_i = 0$ for $i \in K$.
+    Then $B 1_k = k b$.
+    
+    Fig 9.12.1
+    
+    $b_i = \lambda - \frac{y_i}{k}$ for all $i \not\in k$.
+    Check $B \geq 0 \implies b_i \geq 0$. Since $\lambda \geq \frac{y_i}{k}$ for all
+    $i \in K$, $\lambda \geq \max_{i \not\in K} \frac{y_i}{k}$.
+    $y_i = W 1_k$ which is a sum of $\text{Rad}(1/2)$ RVs, so 
+    by concentration for some $\lambda \geq c$ this is satisfied whp.
+    
+    For the last part, we need to show $x^\top S x > 0$ for all $x$ such that
+    $x^\top 1_k = 0$. The exact formula for $S$ is 
+    \begin{align}
+        S 
+        &= \eta + \underbrace{\lambda x^\top J x}_{\geq O(\sqrt{n})} - \underbrace{x^\top B x}_{=0} - \underbrace{x^\top W x}_{\geq O(\sqrt{n})} \\
+        &\geq \frac{k}{2} - 1 - x^\top \ex[W] x - \|W - \ex W\|_{op} \\
+        &\geq 0 &&\text{for suff large $k$}
+    \end{align}
+\end{proof}

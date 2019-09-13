@@ -1,0 +1,112 @@
+% bold \emph
+\let\emph\relax
+\DeclareTextFontCommand{\emph}{\bfseries\em}
+
+\declaretheorem[thmbox=M]{theorem}
+\declaretheorem[thmbox=M,sibling=theorem]{proposition}
+\declaretheorem[thmbox=M,sibling=theorem]{lemma}
+\declaretheorem[thmbox=M,sibling=theorem]{corollary}
+\declaretheorem[thmbox=M,sibling=theorem]{conjecture}
+\declaretheorem[
+    thmbox={style=M,bodystyle=\normalfont},
+    sibling=theorem,
+]{definition}
+\declaretheorem[
+    thmbox={style=M,bodystyle=\normalfont},
+    sibling=theorem,
+]{example}
+\declaretheorem[style=remark,sibling=theorem]{remark}
+
+
+\makeatletter
+\newcommand{\myref}[1]{\cref{#1}\mynameref{#1}{\csname r@#1\endcsname}}
+\newcommand{\Myref}[1]{\Cref{#1}\mynameref{#1}{\csname r@#1\endcsname}}
+\def\mynameref#1#2{%
+  \begingroup
+    \edef\@mytxt{#2}%
+    \edef\@mytst{\expandafter\@thirdoffive\@mytxt}%
+    \ifx\@mytst\empty\else
+    \space(\nameref{#1})\fi
+  \endgroup
+}
+\makeatother
+
+\newcommand{\simiid}{\overset{\text{iid}}{\sim}}
+\newcommand{\eps}{\varepsilon}
+
+
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\TT}{\mathbb{T}}
+\newcommand{\ind}{\mathbbm{1}}
+\newcommand{\fm}{\mathfrak{m}}
+
+\newcommand{\cA}{\mathcal{A}}
+\newcommand{\cB}{\mathcal{B}}
+\newcommand{\cD}{\mathcal{D}}
+\newcommand{\cE}{\mathcal{E}}
+\newcommand{\cG}{\mathcal{G}}
+\newcommand{\cH}{\mathcal{H}}
+\newcommand{\cL}{\mathcal{L}}
+\newcommand{\cN}{\mathcal{N}}
+\newcommand{\cF}{\mathcal{F}}
+\newcommand{\cK}{\mathcal{K}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cU}{\mathcal{U}}
+\newcommand{\cX}{\mathcal{X}}
+
+\newcommand{\mX}{\matr{X}}
+\newcommand{\mY}{\matr{Y}}
+\newcommand{\mA}{\matr{A}}
+\newcommand{\mB}{\matr{B}}
+\newcommand{\mD}{\matr{D}}
+\newcommand{\mI}{\matr{I}}
+\newcommand{\mK}{\matr{K}}
+\newcommand{\mL}{\matr{L}}
+\newcommand{\mM}{\matr{M}}
+\newcommand{\mP}{\matr{P}}
+\newcommand{\mQ}{\matr{Q}}
+\newcommand{\mS}{\matr{S}}
+\newcommand{\mU}{\matr{U}}
+\newcommand{\mV}{\matr{V}}
+\newcommand{\mZ}{\matr{Z}}
+\newcommand{\mSigma}{\matr{\Sigma}}
+\newcommand{\mLambda}{\matr{\Lambda}}
+\newcommand{\va}{\vec{a}}
+\newcommand{\vb}{\vec{b}}
+\newcommand{\vc}{\vec{c}}
+\newcommand{\vf}{\vec{f}}
+\newcommand{\vg}{\vec{g}}
+\newcommand{\vk}{\vec{k}}
+\newcommand{\vmu}{\vec{\mu}}
+\newcommand{\vp}{\vec{p}}
+\newcommand{\vq}{\vec{q}}
+\newcommand{\vu}{\vec{u}}
+\newcommand{\vw}{\vec{w}}
+\newcommand{\vx}{\vec{x}}
+\newcommand{\vy}{\vec{y}}
+\newcommand{\vz}{\vec{z}}
+\newcommand{\vbeta}{\vec{\beta}}
+\newcommand{\vsigma}{\vec{\sigma}}
+\newcommand{\vxi}{\vec{\xi}}
+
+
+\DeclareMathOperator{\id}{id}
+\DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\Ball}{Ball}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\argmax}{argmax}
+\DeclareMathOperator{\argmin}{argmin}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Tr}{Tr}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\adj}{adj}
+\DeclareMathOperator{\TV}{TV}
+\DeclareMathOperator{\Vol}{Vol}
+
+
+
+\newcommand{\ex}{\mathbb{E}}

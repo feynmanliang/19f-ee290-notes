@@ -1,0 +1,46 @@
+\usepackage[margin=1in]{geometry}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{bbm}
+
+\usepackage{braket}
+\usepackage[bold]{hhtensor}
+\usepackage{cancel}
+
+\usepackage{amsthm}
+
+% load thmtools but fix "proof proof" bug with thmbox
+\usepackage{letltxmacro}
+\LetLtxMacro\amsproof\proof
+\LetLtxMacro\amsendproof\endproof
+
+\usepackage{thmtools}
+
+\AtBeginDocument{%
+  \LetLtxMacro\proof\amsproof
+  \LetLtxMacro\endproof\amsendproof
+}
+
+\usepackage{nameref,hyperref}
+\usepackage[capitalize]{cleveref}
+
+\usepackage{natbib}
+\bibliographystyle{humannat}
+\usepackage[nottoc]{tocbibind}
+\usepackage[toc,page]{appendix}
+
+
+\usepackage{algorithm2e}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage[all]{xy}
+
+\usepackage{comment}
+\usepackage{todonotes}

@@ -1,0 +1,182 @@
+\section{9/5/2019}
+
+\subsection{Results from random matrix theory}
+
+Today we consider random matrices $Z = (Z_{ij}) \in \RR^{n \times n}$.
+IID matrix ensemble is when $Z_{ij} \sim P$ are drawn IID, and the
+Gaussian Orthogonal Ensemble (GOE) has $Z_{ii} \sim N(0,2)$
+and $Z_{ij} = Z_{ji} \sim N(0,1)$ for $i \neq j$.
+
+By convention, normalize and center so $\ex Z_{ij} = 0$ and $\ex Z_{ij}^2 = 1$.
+
+\textbf{Intuition}: $\|Z\|_{op} \leq C \sqrt{n}$ with high probability.
+
+Consider Gaussian orthogonal ensemble matrix: $Z_{ij} \sim N(0,1)$ and $Z_{ii}
+\sim N(0,2)$. View $Z = \begin{bmatrix} Z_1, \ldots, Z_n \end{bmatrix}$
+with $Z_i \sim N(0, I_n)$. Then
+\begin{align}
+  \ex \|Z_1\|_2^2 &= \ex[ \sum_{i=1}^n Z_{i1}^2 ] = n \\
+  Z_1^\top Z_2 &= \sum_{i=1}^n Z_{i1} Z_{i2} \\
+  \ex Z_1^\top Z_2 &= 0 \\
+  \ex (Z_1^\top Z_2)^2 &= n \\
+  \lvert Z_1^\top Z_2\rvert &\sim \sqrt{n} \\
+  \frac{Z_1^\top Z_2}{\|Z_1\| \|Z_2\|} &\sim \frac{1}{\sqrt{n}}
+\end{align}
+
+\begin{theorem}[\cite{latala2006estimates}]
+  \begin{align}
+    \sup_i \sum_{j=1}^n \ex \lvert Z_{ij} \rvert^2 &\leq k^2 n \\
+    \sup_j \sum_{i=1}^n \ex \lvert Z_{ij} \rvert^2 &\leq k^2 n
+  \end{align}
+  Fourth moment bound
+  \begin{align}
+    \sum_{i=1}^n \sum_{j=1}^n \ex\lvert Z_{ij}\rvert^4 \leq k^4 n^2
+  \end{align}
+
+  Then $\ex \|Z\|_{op} = O(k \sqrt{n})$
+\end{theorem}
+
+\subsection{Gaussian Orthogonal Ensemble}
+
+$\|Z\|_{op} = \sigma_{max} = \max_{\|v\|=1} v^\top Z v$
+
+For any fixed $v \in S^{n-1}$, we have a Gaussian tail bound
+\begin{align}
+  v^\top Z v
+  &= \sum_i Z_{ii} v_i + \sum_{i < j} 2 Z_{ij} v_i v_j \\
+  &= N(0, \sum_i v_i^4 + \sum_{i < j} 4 v_i^2 v_j^2 ) \\
+  \Pr(\lvert v^\top Z v \rvert > t) &\leq 2 e^{-t^2 / 4}
+\end{align}
+Using an $\epsilon$-net, can find a set of vectors $V_{\epsilon}$ such that
+\begin{align}
+  \max_{v \in V_\epsilon} \lvert v^\top Z v \rvert
+  &\geq (1 - 2 \epsilon) \max_{\lvert v \rvert = 1} \lvert z^\top Z v \rvert \geq (1 - 2 \epsilon) t
+  \label{eq:eig-eps-net-lb}
+\end{align}
+Then by a union bound
+\begin{align}
+  \Pr[ \|Z\|_{op} \geq t ]
+  &\leq \Pr[ \max_{v \in V_\epsilon} \lvert v^\top Z v \rvert \geq (1 - 2\epsilon) t ] \\
+  &\leq \sum_{v \in V_\epsilon} \Pr[ \lvert v^\top Z v \rvert \geq (1 - 2\epsilon) t ] \\
+  &\leq 2 \lvert V \rvert e^{-\frac{1}{4}(1 - 2 \epsilon)^2 t^2} \leq \delta
+\end{align}
+If $\lvert V \rvert \leq c^n$, then
+\begin{align}
+  e^{c (n - c t^2)} &\leq e^{\log \delta} \\
+  \log \frac{1}{\delta} \leq c t^2 - n &\implies t \geq \sqrt{n + \log \frac{1}{\delta}}
+\end{align}
+
+Intuition: when dealing with infinite dimensional maximization (Rayleigh quotient for eigenvalue problem),
+can pass to $\epsilon$-net for cardinality bboud.
+
+\begin{definition}[Covering]
+  $V \subset S^{n-1}$ is called an $\epsilon$-net if $\forall u \in S^{n-1}$,
+  $\exists v \in V$ such that $\|u - v\|_2 \leq \epsilon$.
+\end{definition}
+
+\begin{theorem}
+  $\epsilon$-net yields \cref{eq:eig-eps-net-lb}
+\end{theorem}
+
+\begin{definition}[Packing]
+  For $A \subset \RR^d$, $V = \{v_i\}_{i=1}^n \subset A$ is an
+  $\epsilon$-packing if $\forall i \neq jJ$, $\| v_i - v_j\|_2 \geq \epsilon$.
+\end{definition}
+
+\begin{theorem}
+  Maximal $\epsilon$-packing is an $\epsilon$-net.
+\end{theorem}
+
+Hence, we can lower bound the packing number (size of largest packing)
+by the covering number (size of the smallest covering).
+The following result gives an (obvious?) upper bound:
+
+\begin{lemma}[Volume ratio]
+  For any $\epsilon$-packing $V \subset A$,
+  \begin{align}
+    \lvert V \rvert
+    \leq \frac{\text{Vol}(A + \frac{\epsilon}{2} B)}{\text{Vol}(\frac{\epsilon}{2} B)}
+  \end{align}
+  where $B = \{x : \|x\|_2 \leq 1\}$.
+\end{lemma}
+
+
+Why is the diagonal not important? Let $A = \diag(Z)$. Then we have
+\begin{align}
+  \|Z - A\|_{op}
+  &\leq \|Z\|_{op} + \|A\|_{op} \\
+  \max_{x \in S^{n-1}} \| A x \| &= \max_i \lvert Z_{ii} \rvert = O(\sqrt{2 \log n})
+\end{align}
+So the diagonal term $\|A\|_{op}$ is an order of magnitude
+smaller that $\|Z\|_{op}$.
+
+\begin{example}[Planted clique]
+    Let $G \sim G(1/2, n, k)$. In other words,
+    generate an Erd\"os-Renyi random graph from $G(n, 1/2)$ and then
+    randomly choose a set $K \subset [n]$ connect together to form a clique.
+    
+    Goal: find $K$ given $G$.
+    
+    \begin{theorem}[\cite{alon1998finding}]
+      For any $c$, $k = c \sqrt{n}$, then exists polytime algorithm such that
+      it returns $\hat{K}$ with $P(\hat{K} = K) \to 1$.
+    \end{theorem}
+    
+    Let the adjacency matrix $A_{ij} = \begin{cases}
+        1 & (i,j) \in K \\
+        \text{Bern}(1/2) & i \not\in K\text{ or }j \not\in K, i \neq j \\
+        0 & i = j
+    \end{cases}$ and define $W_{ij} = \begin{cases}
+        2 A_{ij} - 1 & i \neq j \\
+        0 & i = j
+    \end{cases}$
+    
+    \begin{enumerate}
+        \item Find top eigenvector $u$ of $W$
+        \item Let $\tilde{K}$ index the $k$ largest coordinates $\lvert u_i \rvert$
+        \item  Thresholding
+        \begin{align}
+            \hat{K} &= \left\{v \in [n] : d_{\tilde{K}}(v) \geq \frac{3k}{4} \right\} \\
+            d_{\tilde{K}}(v) &= \sum_{j \in \tilde{K}} \ind\{(j,v) \text{ connected}\}
+        \end{align}
+    \end{enumerate}
+    
+    
+    Goal: show $\lvert \tilde{K} \cap K \rvert \geq (1 - \epsilon) k$ whp.
+    
+    Note that $\ex[W] \eqqcolon 1_k 1_k^\top - \diag(1_k)$ consists of $1$s in $K \times K$
+    and $0$ everywhere else. Let
+    \begin{align}
+        W^* &= 1_k 1_k^\top \\
+        v &= \frac{1}{\sqrt{k}} 1_k \\
+    \end{align}
+    Notice thresholding over $v$ exactly recovers $K$, so we want the top
+    eigenvector $u$ of $W$ to be close to $v$. By Davis-Kahan,
+    \begin{align}
+        \min_{s \in \{\pm 1\}} \|u + s v\|_2
+        &\leq \frac{\|W - W^*\|_{op}}{\lambda_1(W^*) - \lambda_2(W^*)}
+    \end{align}
+    Note $\lambda_1(W^*) = k$.
+    Suppose extrema attained at $s=-1$, then
+    \begin{align}
+        \|W - W^*\|_{op} 
+        \leq \|W - \ex W\| + \underbrace{\|\ex W - W^*\|}_{=\|\diag 1_k\| = 1}
+        \leq c \sqrt{n} + 1
+    \end{align}
+    
+    By Weyl's inequality
+    \begin{align}
+        \lvert \lambda_2(W) \rvert
+        = \lvert \lambda_2(W^*) - \lambda_2(W) \rvert
+        \leq \|W^* - W\|_{op}
+        \leq c \sqrt{n} + 1
+    \end{align}
+    Finally
+    \begin{align}
+        \|u - v\|_2 
+        \leq \frac{c \sqrt{n} + 1}{c \sqrt{n} - (c \sqrt{n} + 1)}
+        \leq \epsilon
+    \end{align}
+\end{example}
+
+NOTE: when you have bounded fourth moments, the rate is always $n^{-1/2}$! Deep result.

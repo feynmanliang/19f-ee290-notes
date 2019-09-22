@@ -1,0 +1,212 @@
+\section{9/17/2019}
+
+Recall the SDP relaxation
+\begin{align}
+  \hat{X}_{cvx} &= \argmax_X \braket{W, X} \\
+  \text{st } \|X\|_\ast &\leq k \\
+  0 &\leq X \leq J = 1 1^\top \\
+  \braket{X,J} &= k^2
+\end{align}
+
+\begin{theorem}
+  If $k \geq c \sqrt{n}$, $c$ sufficiently large,
+  then $X^*$ is the unique maximizer.
+\end{theorem}
+
+\begin{proof}
+  For any feasible $X$,
+  \begin{align}
+    \braket{W, X^*} - \braket{W, X} \gtrsim \|X - X^*\|_{\ell_1}
+  \end{align}
+\end{proof}
+
+Last time, defined
+\begin{align}
+  u &= \frac{1}{\sqrt{k}} 1_k \\
+  X^* &= 1_k 1_k^\top = k \underbrace{u u^\top}_{\eqqcolon E} \\
+  P^\perp(Y) &= (I - E)Y(I - E) \\
+  P(Y) &= Y - P^\perp(Y) = E Y + Y E - E Y E
+\end{align}
+$P^\perp$ is the projection to the orthogonal complement of $E$,
+and $P$ is the projection onto $E$.
+
+We proved last time
+\begin{align}
+  \braket{X - X^*, W}
+  &\geq \left(\frac{1}{2} - \frac{\|W - X^*\|_{op}}{2k} - \|P(W - X^*)\|_{\ell_\infty} \right)\|X - X^*\|_{\ell_1}
+\end{align}
+
+Today, we consider
+\begin{align}
+  \|W - X^*\|_{op}
+  &\leq \underbrace{\|W - E W\|_{op}}_{\lesssim \sqrt{n}} + \underbrace{\|E W - X^*\|_{op}}_{\leq 1}
+\end{align}
+Indeed
+\begin{align}
+  W - X^* &= W - E W - I_k \\
+  \|P(W - X^*)\|_{\ell_\infty} &\leq \|P(W - EW)\|_{\ell_\infty} + \|P(I_k)\|_{\ell_\infty} \\
+  P(I_k) &= E I_k + I_k E - E I_k E = E
+\end{align}
+Also
+\begin{align}
+  \|P(Y)\|_{\ell_\infty}
+  &= \|E Y + Y E - E Y E \|_{\ell_\infty} \\
+  &\leq \|E Y\|_{\ell_\infty} + \|Y E \|_{\infty} + \|E Y E\|_{\infty}
+\end{align}
+The last term is complicated, but notice
+$\|EYE\|_\infty \leq \|E Y\|_\infty \|E\|_{\ell_\infty \to \ell_\infty} \leq \|E Y\|_\infty$
+hence
+\begin{align}
+  \|P(Y)\|_{\ell_\infty}
+  &\leq 3 \|E Y\|_{\ell_\infty}
+\end{align}
+Doing the calculation for $\|E Y\|_\infty$
+\begin{align}
+  E Y &= \frac{1}{k} \begin{pmatrix}
+    1 & 0 \\ 0 & 0
+  \end{pmatrix} \begin{pmatrix}
+    0 & \Rad \\ \Rad & 0
+  \end{pmatrix}
+\end{align}
+So $\|E Y\|_\infty = \frac{1}{k} \max_{j \not\in K} \sum_{i \in K} Y_{ij}$.
+
+$n-k$ sub-Gaussian rv with variance $1/k$.
+
+\begin{lemma}
+  If $X_i$ satisfies $\ex e^{-x_i^2 / \sigma^2} \leq 2$ for
+  some $\sigma$, then
+  \begin{align}
+    \ex \max_{i=1}^n \lesssim \sigma \sqrt{\log n}
+  \end{align}
+\end{lemma}
+
+\subsection{Planted partition model}
+
+Let $A_{ij} \sim \begin{cases}
+  P, &\text{ if }\sigma_i = \sigma_j\\
+  Q, &\text{ ow }
+\end{cases}$
+with $\sigma = (\sigma_1, \ldots, \sigma_n) \in \{\pm 1\}^n$.
+
+\textbf{Goal}: Recover $\sigma$.
+
+Stochastic block model: $P = \text{Bern}(p)$ and $Q = \text{Bern}(q)$.
+If $p > q$ we call it \emph{associative} and $p < q$ is called \emph{disassociative}.
+
+IID model: $\sigma_i \simiid \Rad$
+
+Bisection: $\sum \ind\{\sigma_i = + 1\} = \sum \ind\{\sigma_i = -1\}$
+
+
+Some problems we are interested in solving include \emph{detection}:
+\begin{align}
+  \cH_0 : A_{ij} \simiid \frac{P + Q}{2} \\
+  \cH_1 : \text{Planted partition model}
+\end{align}
+
+\begin{lemma}
+  $(X,Y)$ with $Y \in \{\pm1\}$.
+
+  $P_{X \mid Y = 1} = P$ and $P_{X \mid Y = -1} = Q$.
+
+  $P_Y(1) = P_Y(-1) = \frac{1}{2}$.
+
+  Observe $X$, infer $Y$?
+
+  \begin{align}
+    \min_{\hat{Y}(X)} \ex \ind\{\hat{Y} \neq Y\} &= \frac{1}{2} ( 1 - \TV(P,Q) )
+  \end{align}
+\end{lemma}
+
+Another problem is \emph{correlated recovery}
+\begin{align}
+  \ell(\sigma, \hat\sigma) &= \min_{s \in \{\pm 1\}} \|\sigma + s \hat\sigma\|_1
+\end{align}
+If I beat random guess, I win.
+
+Yet another is \emph{almost exact recovery}
+\begin{align}
+  \frac{\ex \ell(\sigma, \hat\sigma)}{n} \to 0
+\end{align}
+
+Finally in \emph{exact recovery}
+\begin{align}
+  \Pr[\sigma \neq \hat\sigma] \to 0
+\end{align}
+
+Computing TV is not easy usually. \emph{Ingster-Suslina Trick}
+lets us upper bound it with chi squared divergence:
+\begin{align}
+  \chi^2(P \mid\mid Q) &= \left(\int \frac{p^2}{q} \right) - 1 \geq 0 \\
+  \TV(P, Q) &\lesssim \sqrt{KL(P\mid\mid Q)} \leq \sqrt{\chi^2(P \mid\mid Q)}
+\end{align}
+
+Mixture vs single: suppose $\{P_\theta : \theta \in \Theta\}$ family of models,
+prior $\Pi$ on $\Theta$,
+\begin{align}
+  P_\Pi(x) &= \int P_\theta(x) \Pi(d\theta)
+\end{align}
+Then sometimes it's easy to write down
+\begin{align}
+  \chi^2(P_\Pi \mid\mid Q) &= \ex_{\theta, \hat\theta, \Pi} G(\theta, \hat\theta) - 1 \\
+  G(\theta,\hat\theta) &= \int \frac{P_\theta P_{\tilde\theta}}{Q}
+\end{align}
+
+\begin{proof}
+  By Fubini
+  \begin{align}
+    \int \frac{P_\Pi^2}{Q}
+    &= \int \frac{\int p_\theta(x) \pi(d\theta) \int p_{\hat\theta}(x) \pi(d\hat\theta)}{Q(x)} dx \\
+    &= \int \pi(d\theta) \pi(d\hat\theta) \left(\frac{P_\theta(x) P_{\hat\theta}(x)}{Q(x)}\right) dx
+  \end{align}
+\end{proof}
+
+\subsection{Contiguity between probability measures}
+
+Introduced by LeCun in the asymptotic statistics literature.
+
+\begin{definition}
+  A sequence of probability measures $(p_n)$ is \emph{contiguous to $(Q_n)$}
+  if for any events $E_\infty$,
+  \begin{align}
+    Q_n(E_n) \to 0 \implies P_n(E_n) \to 0
+  \end{align}
+\end{definition}
+
+This can be thought of as an asymptotic version of absolute continuity: $P \ll
+Q$ if for all events $E$
+\begin{align}
+  Q(E) = 0 \implies P(E) = 0
+\end{align}
+
+To interpret contiguity, let $E_n$ be set $X$ lies in to declare $p_n$ sequence.
+\begin{align}
+  P_n(E_n)
+  &= \ex_{Q_n}\left( \frac{P_n}{Q_n} \ind(E_n) \right) \\
+  &\leq \sqrt{\ex_{Q_n}\left(\frac{P_n^2}{Q_n^2} \right) \ex_{Q_n}[\ind(E_n)]}
+\end{align}
+
+\textbf{SBM}: Fix label $\sigma$.
+\begin{align}
+  P_\sigma(A) &= \prod_{i<j} \left( P \ind_{\sigma_i = \sigma_j} + Q \ind_{\sigma_i \neq \sigma_j} \right) \\
+    &= \prod_{j < j}\left( \frac{P + Q}{2}  + \frac{P - Q}{2} \sigma_i \sigma_j \right) \\
+  G(\sigma, \hat\sigma) &= \int \frac{P_\sigma(A) P_{\hat\sigma}(A)}{P_0(A)} dA \\
+  P_0(A) &= \prod_{i < j} \frac{P+Q}{2} \\
+  &= \prod_{i<j} \left( \int \frac{P+Q}{2}  + \int \frac{P-Q}{2} \sigma_i \sigma_j
+  + \int \frac{P - Q}{2} \hat\sigma_i \hat\sigma_j + \int \underbrace{\frac{(P-Q)^2}{2(P+Q)}}_{\eqqcolon \rho} \sigma_i \sigma_j \hat\sigma_i \hat\sigma_j \right) \\
+  &= \prod_{i < j} (1 + \rho \sigma_i \sigma_j \hat\sigma_i \hat\sigma_j) \\
+  &\leq \exp(\rho \sum_{i < j} \sigma_i \sigma_j \hat\sigma_i \hat\sigma_j) \\
+  &\leq \exp(\frac{\rho}{2} \braket{\sigma, \hat\sigma}^2)
+\end{align}
+But we know the last term very well. Since $\sigma, \hat\sigma \simiid \Rad^n$, we have
+$\frac{1}{\sqrt{n}} \braket{\sigma, \hat\sigma} \Rightarrow \cN(0,1)$ so
+\begin{align}
+  \ex e^{\frac{\rho}{2} \braket{\sigma, \hat\sigma}^2} 
+  \to \ex e^{\frac{\rho}{2} (\sqrt{n} z)^2} = \ex e^{\frac{\rho n}{2} z^2} < \infty
+\end{align}
+whenever $\rho_n < 1$. So we have the lower bound
+\begin{align}
+  \rho = \frac{\tau + o(1)}{n} \quad \tau = \frac{(a  - b)^2}{2 (a + b)}
+\end{align}
+When $\tau < 1$, then it is impossible to detect.
+

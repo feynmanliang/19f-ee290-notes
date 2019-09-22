@@ -1,0 +1,207 @@
+\section{9/17/2019}
+
+\subsection{Logistics}
+
+HW1 releasted
+
+\subsection{Primal method for SDP}
+
+Planted Clique model $G(1/2, n, k)$.
+
+\begin{align}
+  \hat{X}_{SDP} &= \argmax_X \braket{W,X} \\
+  st~X &\succeq 0 \\
+  X &\geq 0 \\
+  \Tr(X) &= k \\
+  \braket{X, J} &= k^2
+\end{align}
+where $J = 1 1^\top$ and $W_{ij} = \ind\{i=j\} 2 A_{ij} - 1$.
+Last time we proved (using a dual certificate approach)
+\begin{theorem}
+  If $k \geq c \sqrt{n}$ for a large enough $c$, then $X^* = 1_k 1_k^\top$
+  is the unique maximizer.
+\end{theorem}
+
+Today we will consider a primal approach.
+
+\textbf{Round up suffices}: Suppose we find $X$ such that
+$\braket{W, X} \geq (1 - \eps) \braket{W, X^*}$. Let
+$\hat{X}_{ij} = \ind\{X_{ij} > 1/2\}$.
+
+\begin{theorem}
+  If $\eps \lesssim \frac{c_0 \sqrt{n}}{k^3}$ for sufficiently small $c_0 < 0$,
+  then $\hat{X} = X^*$ whp.
+\end{theorem}
+
+\begin{proof}
+  Suppose $\hat{X} \neq X^*$. Then either:
+
+  $\exists (i_0, j_0) \in K \times K$
+  such that $X_{i_0, j_0}^* = 1$ and $X_{i_0, j_0} \leq \frac{1}{2}$,
+  or
+
+  $\exists (i_1, j_1) \not\in K \times K$ such that $X_{i_1,j_1}^* = 0$
+  and $X_{i_1,j_1} > \frac{1}{2}$.
+
+  In both acses, $\|X - X^*\|_F \geq \frac{1}{2}$.
+
+  Also, we previously showed that the global optimum $\braket{W, X^*} = k^2 - k$
+  because even though $W$ is random, inner product with $X^*$ grabs the upper left
+  $K \times K$ corner where $W$ is deterministic.
+
+  Recall the KKT condition: $S \succeq 0$, $S 1_K = 0$, $B \geq 0$, $\eta, \lambda \in \RR$,
+  $\lambda_{n-1}(S) \geq c_2 \sqrt{n}$. ALso
+  \begin{align}
+    \braket{W, X^*} - \braket{W, X} &= \braket{S, X} + \braket{B, X} \eqqcolon \delta
+  \end{align}
+  because last class we had
+  \begin{align}
+    \braket{W, X}
+    &\leq L(X, S, B, \eta, \lambda) \\
+    &= \braket{W, X} + \braket{S, X} + \braket{B, X} + \eta(k - \Tr X) + \lambda (k^2 - \braket{X,J}) \\
+    &= \braket{W, X^*}
+  \end{align}
+
+  We already knew $u = \frac{1}{\sqrt{k}} 1_k$ eigenvector of $S$ corresponding to $\lambda_n(S) = 0$
+  (KKT complementary slackness tells us that $S u = 0$). This gives the matrix
+  inequality
+  \begin{align}
+    S \succeq \lambda_{n-1}(S)(I - U U^\top)
+  \end{align}
+  Since we previously have a bound on $\braket{S,X}$, to look for a sandwich inequality
+  we consider taking an inner product with $X$
+  \begin{align}
+    \braket{S, X}
+    &\geq c_2 \sqrt{n} \braket{X, I - X^* / k}
+    =  c_2 \sqrt{n} \braket{X, I} - c_2 \frac{\sqrt{n}}{k} \braket{X, X^*} \\
+    \braket{X, X^*} &\geq k^2 - \frac{k \delta}{c_2 \sqrt{n}}
+  \end{align}
+  Where we used the upper bound
+  \begin{align}
+    \delta \geq \braket{S, X}
+  \end{align}
+  This gives a bound on a cross term in the Frobenius norm expansion
+  \begin{align}
+    \|X - X^*\|_F^2
+    &= \|X\|_F^2 + \|X^*\|_F^2 - 2 \braket{X, X^*} \\
+    \|X^*\|_F^2 &= \|1_k 1_k^\top\|_F^2 = k^2 \\
+    \|X\|_F^2 &\leq \|X\|_\ast^2 = k^2 \\
+    \therefore \|X - X^*\|_F^2
+              &\leq k^2 + k^2 - 2 \left(k^2 - \frac{k \delta}{c_2 \sqrt{n}}\right) \\
+              &= \frac{2 k \delta}{c_2 \sqrt{n}}
+              \leq \frac{1}{4}
+  \end{align}
+\end{proof}
+
+So we we how to to use approximate KKT conditions. But we need quantitative result
+of the maximizer (i.e. the second eigenvector $\lambda_{n-1}(S)$) to show the
+uniqueness of the maximimzer.
+
+\subsubsection{SDP Advantage: Robust to monotone adversary}
+
+Given adjacency matrix $A$, allow adversary to delete edges \emph{not in the clique}.
+
+Failure of spectral methods: they depend too much on edges not in the clique, that
+by deleting them in a certain way (see Figure) results in their failure.
+
+Figure 9.17.1: spectral methods will fail because there will be two large eigenvalues
+$\lambda_1 \approx \lambda_2 \approx \frac{n-k}{4}$ corresponding to the ER random
+blocks and the $k$-clique will be missed.
+
+In contrast, SDPs enjoy better robust. Consider modification $W \mapsto \tilde{W}$.
+For any $X \neq X^*$, will show
+
+\subsection{Second SDP formulation: primal analysis}%
+
+This gives another formulation of the same problem, but presents new
+techniques.
+
+Recall $\Tr X = k = \sum_i \lambda_i(X) = \|X\|_\ast$ the nuclear norm.
+We have the SDP formulation
+\begin{align}
+  \hat{X}_{cvx} &= \argmax_X \braket{X,W} \\
+  \text{st } \|X\|_\ast &\leq k \\
+  0 &\leq X \leq J \\
+  \braket{X,J} &= k^2
+\end{align}
+
+
+\begin{lemma}
+  For any matrix $X \in \RR^{m \times n}$,
+  $\|X\|_\ast \leq 1$ iff
+  $\exists W_1 \in \RR^{m \times n}$
+  and $W_2 \in \RR^{n \times n}$ such that $\Tr(W_1) + \Tr(W_2) \leq 2$.
+  \begin{align}
+    \begin{bmatrix}
+      W_1 & X \\
+      X^\top & W_2
+    \end{bmatrix} \succeq 0
+  \end{align}
+
+  After this lemmma, we know we can solve the nuclear norm into a PSD constraint
+  and can hence solve this problem with a SDP solver.
+\end{lemma}
+
+\begin{proof}
+  We need the following result:
+
+  \begin{lemma}[lSub-differential of nuclear norm]
+    $X \neq 0$, $X = U \Sigma V^\top$ and the subgradient for nuclear norm
+    \begin{align}
+      \partial\|\cdot\|_\ast(X)
+    &= \{ U V^\top + p^\perp(Y) : \|Y\|_{op} \leq 1
+    \} \\
+      \text{where } p^\perp(Y) &= (I - U U^\top)(I - V V^\top)
+    \end{align}
+  \end{lemma}
+
+  We will show the sufficient condition that for any $X \neq X^*$,
+  \begin{align}
+    \braket{W, X^*} - \braket{W, X} \gtrsim \|X - X^*\|_{\ell_1}
+  \end{align}
+
+  We have $X^* = 1_k 1_k^\top$, with top eigenvector
+  $u = \frac{1}{\sqrt{k}} 1_k$. Analogously, $X^* = k u u^\top$.
+  Letting $E = U U^\top$,
+  \begin{align}
+    p^\perp(Y) &= (I - E) Y (I - E) \\
+    p(Y) &= Y - P^\perp(Y) = E Y + Y E - E Y E
+  \end{align}
+  We can decompose
+  \begin{align}
+    \braket{W, X^* - X}
+    &= \braket{X^* - X, X^*}
+    + \braket{X^* - X, P^\perp(W - X^*)}
+    + \braket{X^* - X, P(W - X^*)}
+  \end{align}
+
+  (a)
+  \begin{align}
+    \braket{X^* - X}
+    &= \sum_{(i,j) \in K \times K} (1 - X_{ij}) = \frac{1}{2} \|X - X^*\|_{\ell_1} \\
+    &= \sum_{(i,j) \not\in K \times K} (X_{ij} - v)
+  \end{align}
+
+
+  (b)
+  \begin{align}
+    0 &\geq \|X\|_\ast - \|X*^\|_\ast \\
+      &\geq \braket{X - X^*, \underbrace{E + p^\perp(Y)}_{\partial\|\cdot\|_\ast(X^*), \|Y\|_{op} \leq 1}} \\
+        &= \braket{X - X^*, E} + \braket{X - X^*, p^\perp(y)}
+  \end{align}
+
+  For the last term, just use H\"older's inequality
+  \begin{align}
+    \lvert \braket{X^* - X, P(W - X^*)} \rvert
+    &\leq \| P(W - X^*)\|_{\ell_\infty} \|X - X^*\|_{\ell_1}
+  \end{align}
+
+  Altogether (remember this, building on this next lecture)
+  \begin{align}
+    \braket{X^* - X, W}
+    &\geq \left(
+      \frac{1}{2} - \frac{\|W - X^*\|_{op}}{2k} - \| P(W - X^*) \|_{\ell_\infty}
+    \right)
+    \|X - X^*\|_{\ell_1}
+  \end{align}
+\end{proof}

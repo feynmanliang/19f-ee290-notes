@@ -1,0 +1,176 @@
+\section{9/24/2019}
+
+\subsection{Exact recovery of stochastic block model}
+
+
+\begin{definition}[Symmetric stochastic block model]
+  Let $SSBM(n, 2, p_{in} = \frac{a \log n}{n}, p_{out} = \frac{b \log n}{n})$
+  be a stochastic block model on $n$ vertices,
+  with $2$ communities,
+  and with edge probabilities $p_{in}$ within a community
+  and $p_{out}$ between communities.
+\end{definition}
+
+Why is there a $\log$ in the probability?
+Recall that $G(n, c \log n / n)$ is connected whp iff $c > 1$.
+In SSBM, connected whp if $\frac{a+b}{2} > 1$.
+
+\begin{theorem}
+  Exact recovery in $SSBM(n, 2, \frac{a \log n}{n}, \frac{b \log n}{n})$
+  is efficiently solvable if $\lvert \sqrt{a} - \sqrt{b} \rvert > \sqrt{2}$
+  and unsolvable if $\lvert \sqrt{a} - \sqrt{b} \rvert < \sqrt{2}$.
+\end{theorem}
+
+\begin{align}
+  \frac{a + b}{2} > 1 + \sqrt{ab}
+\end{align}
+
+$\lvert \sqrt{a} - \sqrt{b} \rvert = \sqrt{2}$:
+solvable if $a,b > 0$ and not solvable if $a=0$ or $b=0$.
+
+Exact recovery not solvable if MAP estimation fails:
+\begin{align}
+  \argmax_a P(X=a \mid G=g)
+\end{align}
+
+\begin{proof}[Proof of lower bound]
+  Consider one dimension problem of oracle-aided hypothesis testing.
+  The oracle revealed true labels of all vertices except for one, say $X_0$.
+
+  With $n/2$ nodes in each of the two communities, the posterior
+  probability
+  \begin{align}
+    P(X_0 = u \mid G = g, X_{\setminus 0} = x_{\setminus 0})
+    &= \frac{\overbrace{P(X_0 = u)}^{=1/2} P(G = g, X_{\setminus 0} = x_{\setminus 0} \mid X_0 = u )}{
+    P(G = g, X_{\setminus 0} = x_{\setminus 0})}
+  \end{align}
+  When $X_0 = 1$, $B(n/2, q_{in})$ and when $X_0=2$, $B(n/2, q_{out})$.
+  \begin{align}
+    p_e
+    &\leq P(B(n/2, q_{in}) \leq B(n/2, q_{out})) \\
+    &= n^{-\left(\frac{\sqrt{a} - \sqrt{b}}{\sqrt{2}}\right)^2 + o(1)}
+  \end{align}
+\end{proof}
+
+
+\textbf{Important intuition}: let $X = (X_1, \ldots, X_n) \simiid P$ or $Q$,
+let $\cH_0$ be the hypothesis that the samples are from
+$P$ and $\cH_1$ that they are from $Q$. The minimum probability
+of error under an equally probable prior is
+\begin{align}
+  \frac{1}{2} \left( 1 - \TV(p^{\otimes n}, q^{\otimes n})\right)
+\end{align}
+
+There is a (not commonly used) Chernoff bound of
+\begin{align}
+  \TV(p^{\otimes n}, q^{\otimes n}) = 1 - e^{-n c(P, Q) + o(n)}
+\end{align}
+where $c(P, Q) = -\log \inf_{\alpha \in [0,1]} \int p^\alpha q^{1-\alpha}$.
+
+We will instead be concerned with bounds involving a different discrepancy
+metric.
+
+\begin{definition}[Squared hellinger distance]
+  \begin{align}
+    H^2(P, Q)
+    &= \ex_Q\left[ \left(1 - \sqrt{\frac{P}{Q}}\right)^2 \right]
+      \geq 0 \\
+    &= \ex_Q\left[
+      1 + \frac{P}{Q} - 2 \sqrt{\frac{P}{Q}}
+    \right] \\
+    &= 1 + 1 - 2 \int \sqrt{PQ}
+    = 2 \left( 1 - \int \sqrt{PQ} \right)
+  \end{align}
+  \begin{align}
+    0 \leq \frac{1}{2} H^2(P, Q)
+    \leq \TV(P, Q)
+    \leq H(P, Q) \sqrt{1 - \frac{H^2}{4}}
+    \leq 1
+  \end{align}
+\end{definition}
+
+\begin{lemma}
+  For any sequence $\{P_n\}$, $\{Q_n\}$, as $n \to \infty$
+  \begin{align}
+    \TV(p_n^{\otimes n}, q_n^{\otimes n}) \to 0 &\iff H^2(p_n, q_n) = o(1/n) \\
+    \TV(p_n^{\otimes n}, q_n^{\otimes n}) \to 1 &\iff H^2(p_n, q_n) = \omega(1/n)
+  \end{align}
+  So $\TV$ is not the right 1D thing to look at, rather $H^2$ is!
+\end{lemma}
+
+Let $c_1 = [1:n/2]$ and $c_2 = [n/2+1:n]$,
+$G \sim P_{G \mid X}(\cdot \mid X_0)$ where $X_0$ are the true labels.
+
+\begin{definition}[Bad pairs]
+  $\cB(G)
+  = \{ (u,v) :
+    u \in c_1, v \in c_2, P_{G \mid X}(G \mid X_0) \leq P_{G \mid X}(G \mid X_0[u \leftrightarrow v])$,
+    in which case even the MAP estimator cannot return the correct solution.
+\end{definition}
+
+\begin{definition}[Bad vertices for each community]
+  For $i=1,2$,
+  \begin{align}
+    \cB_i(G) &= \{u,v \in c_ : d_+(u) \leq d_-(u) \leq 1 \}
+  \end{align}
+  where $d_+(u) = \#\{\text{edges $u$ has in its own comunity}\}$
+  and $d_-(u)$ similarly but with the other community.
+\end{definition}
+
+Consider swawpping $u \leftrightarrow v$. The number of edges that change
+is
+\begin{align}
+  d_+(u) + d_+(v)
+  &\leq d_-(u \setminus v) + d_-(v \setminus u)
+\end{align}
+
+Let $u \in c_1, u \in \cB_1(G)$ and $v \in c_2, v \in cB_2(G)$.
+Then $d_+(u) \leq d_-(u) - 1$ as well as
+$d_+(v) \leq d_-(v) - 1$ which implies
+\begin{align}
+  d_+(u) + d_+(v)
+  &\leq d_-(u) + d_-(v) - 2
+  \leq d_-(u \setminus v) + d_-(v \setminus u)
+\end{align}
+so MAP again fails if we have bad vertices in each community.
+This suggests that our analysis should focus on these bad pairs.
+
+\begin{lemma}
+  $\sqrt{a} - \sqrt{b} < \sqrt{2} \implies \Pr[\exists u \in \cB_1(G)] = 1 - o(1)$
+\end{lemma}
+
+Let $\cB_u = \ind(d_+(u) \leq d_-(u) - 1)$.
+\begin{align}
+  \Pr[\forall u \in c_I, u \not\in \cB_1(G)]
+  = \Pr[ \sum_{u=1}^{n/2} \cB_u = 0 ]
+  \leq ?
+\end{align}
+
+\begin{theorem}[Paley-Zygmund Inequality]
+  Let $X \geq 0$, $0 < \ex X^2 < \infty$.
+  For any $c \in [0,1]$
+  \begin{align}
+    \Pr[X > c \ex[X] \geq (1 - c)^2 \frac{(\ex X)^2}{\ex X^2}
+  \end{align}
+\end{theorem}
+
+Some intuition for Paley-Zgymund: Figure 9.24.1
+
+Applying Paley-Zygmund on the complement event with $c=0$.
+\begin{align}
+  \Pr[\forall u \in c_I, u \not\in \cB_1(G)]
+  = \Pr[ \sum_{u=1}^{n/2} \cB_u = 0 ]
+  \leq \frac{\Var(\sum \cB_u)}{\ex (\sum \cB_u)^2}
+\end{align}
+
+\begin{align}
+  n P(B_1 = 1) + \frac{n (n-1)}{2} P(B_1 = 1, B_2 = 1)
+  + \frac{n^2}{2} P(B_1 = 1, B_{n/2 + 1} = 1)
+\end{align}
+
+\begin{align}
+  P(B_1 = 1 \mid B_2 = 1)
+  &= P(d_+(1) \leq d_-(1) - 1 \mid d_+(2) \leq d_-(2) - 1) \\
+  &= P( B(n/2-2, q_{in}) + B_{1,2} \leq B(n/2, q_{out}) - 1 \\
+  &\qquad\qquad \mid B'(n/2 - 2, q_{in}) + B_{12} \leq B'(n/2, q_{out}) - 1 )
+\end{align}

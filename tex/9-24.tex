@@ -2,18 +2,39 @@
 
 \subsection{Exact recovery of stochastic block model}
 
-
 \begin{definition}[Symmetric stochastic block model]
-  Let $SSBM(n, 2, p_{in} = \frac{a \log n}{n}, p_{out} = \frac{b \log n}{n})$
-  be a stochastic block model on $n$ vertices,
-  with $2$ communities,
-  and with edge probabilities $p_{in}$ within a community
-  and $p_{out}$ between communities.
+  \label{def:9-24-ssbm}
+  The \emph{symmetric stochastic block model}, denoted by
+  $SSBM(n, 2, p_{in} = \frac{a \log n}{n}, p_{out} = \frac{b \log n}{n} \mid \sigma)$,
+  is a probability distribution over graphs $(V, E)$
+  on $n$ vertices where:
+  \begin{itemize}
+    \item Each vertex $v \in V$ belongs to one of $2$ communities, denoted
+      by $\sigma_v \in \{1,2\}$
+    \item \textbf{Symmetric}: exactly $n/2$ vertices in each community
+    \item The probability of an edge between two vertices in the
+      same community is $p_{in} = \frac{a \log n}{n}$
+    \item The edge probability between different communities
+      is $p_{out}$.
+  \end{itemize}
 \end{definition}
 
-Why is there a $\log$ in the probability?
-Recall that $G(n, c \log n / n)$ is connected whp iff $c > 1$.
-In SSBM, connected whp if $\frac{a+b}{2} > 1$.
+Notice that we have chosen to parameterize $p_{in} = \frac{a \log n}{n}$
+and $p_{out} = \frac{b \log n}{n}$.
+Some intuition for the $\log$ is to recall that $G(n, c \log n / n)$ is
+connected whp iff $c > 1$.
+For SSBM, we have a similar threshold where $G$ is connected whp iff
+the average of the edge probability coefficients $\frac{a+b}{2} > 1$.
+
+We are interested in \emph{exact recovery in SSBM}: let
+$G = (V, E) \sim SSBM(n, 2, p_{in}, p_{out} \mid \sigma^*)$,
+can we construct an estimator $\hat\sigma(G)$ such that
+as $n \to \infty$
+\begin{align}
+  \Pr[\sigma^* \neq \hat\sigma] \to 0
+\end{align}
+The goal over the next lectures will be to establish the following
+phase transition regarding the hardness of exact recovery in SSBM:
 
 \begin{theorem}
   Exact recovery in $SSBM(n, 2, \frac{a \log n}{n}, \frac{b \log n}{n})$
@@ -21,47 +42,70 @@ In SSBM, connected whp if $\frac{a+b}{2} > 1$.
   and unsolvable if $\lvert \sqrt{a} - \sqrt{b} \rvert < \sqrt{2}$.
 \end{theorem}
 
-\begin{align}
-  \frac{a + b}{2} > 1 + \sqrt{ab}
-\end{align}
+\begin{remark}
+  We can rewrite $\lvert \sqrt{a} - \sqrt{b} \rvert > \sqrt{2}$
+  as $\frac{a + b}{2} > 1 + \sqrt{ab}$ and compare against
+  the $\frac{a+b}{2} > 1$ connectivity threshold for SSBM.
+  As expected, exact recovery implies connectivity.
+  Furthermore, exact recovery requires a $\sqrt{ab}$ over-sampling factor.
+\end{remark}
 
-$\lvert \sqrt{a} - \sqrt{b} \rvert = \sqrt{2}$:
-solvable if $a,b > 0$ and not solvable if $a=0$ or $b=0$.
+\begin{remark}
+  For $\lvert \sqrt{a} - \sqrt{b} \rvert = \sqrt{2}$, exact recovery
+  is efficiently solvable if $a,b > 0$.
+\end{remark}
 
-Exact recovery not solvable if MAP estimation fails:
-\begin{align}
-  \argmax_a P(X=a \mid G=g)
-\end{align}
+\begin{proof}[Proof of unsolvable]
+  Consider the one dimensional problem of oracle-aided hypothesis testing
+  problem where the oracle reveals the true communities $\sigma_v$
+  of all vertices except for one, say $\sigma_0$, and
+  we test $\cH_0 = \{\sigma_0 = 1\}$ against $\cH_a = \{ \sigma_0 = 2\}$.
 
-\begin{proof}[Proof of lower bound]
-  Consider one dimension problem of oracle-aided hypothesis testing.
-  The oracle revealed true labels of all vertices except for one, say $X_0$.
-
-  With $n/2$ nodes in each of the two communities, the posterior
-  probability
+  The probability of error is minimized by the MAP estimator, which
+  picks $\sigma_0 = u$ maximizing the posterior probability
   \begin{align}
-    P(X_0 = u \mid G = g, X_{\setminus 0} = x_{\setminus 0})
-    &= \frac{\overbrace{P(X_0 = u)}^{=1/2} P(G = g, X_{\setminus 0} = x_{\setminus 0} \mid X_0 = u )}{
-    P(G = g, X_{\setminus 0} = x_{\setminus 0})}
+    \Pr[\sigma_0 = u \mid G = g, \sigma_{\setminus 0} = \sigma_{\setminus 0}]
   \end{align}
-  When $X_0 = 1$, $B(n/2, q_{in})$ and when $X_0=2$, $B(n/2, q_{out})$.
+  Since $P(\sigma_0 = u) = 1/2$ for $u \in \{1,2\}$,
+  the posterior probability is
+  \begin{align}
+    \Pr[\sigma_0 = u \mid G = g, \sigma_{\setminus 0} = \sigma_{\setminus 0}]
+    &= \frac{\overbrace{\Pr[ \sigma_0 = u ]}^{=1/2}
+      \Pr[G = g, \sigma_{\setminus 0} = \sigma_{\setminus 0} \mid \sigma_0 = u]
+      }{
+    \Pr[G = g, X_{\setminus 0} = x_{\setminus 0}]} \\
+    &\propto
+    \Pr[G = g, \sigma_{\setminus 0} = \sigma_{\setminus 0} \mid \sigma_0 = u]
+  \end{align}
+  which depends only on the number of edges between vertex $0$ and the two
+  communities.
+
+  Let $T = \#\{v \in V \setminus \{0\} : \sigma_v = 1 \text{ and } (0,v) \in E\}$
+  count the number of edges between vertex $0$ and all the vertices in
+  community $1$ (provided by the oracle through $\sigma_{\setminus 0}$).
+  Notice $T \mid \sigma_0 = 1 \sim B(n/2, p_{in})$ and
+  $T \mid \sigma_0 = 2 \sim B(n/2, q_{out})$, so
+  the error probability for a hypothesis test using $T$
+  is bounded as
   \begin{align}
     p_e
-    &\leq P(B(n/2, q_{in}) \leq B(n/2, q_{out})) \\
+    &\leq P(B(n/2, p_{in}) \leq B(n/2, p_{out})) \\
     &= n^{-\left(\frac{\sqrt{a} - \sqrt{b}}{\sqrt{2}}\right)^2 + o(1)}
   \end{align}
+
+  We will spend the remainder of this lecture showing that exact recovery is
+  not solvable if $n p_e \to \infty$.
 \end{proof}
 
 
-\textbf{Important intuition}: let $X = (X_1, \ldots, X_n) \simiid P$ or $Q$,
-let $\cH_0$ be the hypothesis that the samples are from
-$P$ and $\cH_1$ that they are from $Q$. The minimum probability
-of error under an equally probable prior is
+\textbf{Important intuition}: Let $X = (X_1, \ldots, X_n) \simiid P$ or $Q$,
+$\cH_0$ be the hypothesis that the samples are from $P$,
+and $\cH_1$ that they are from $Q$.
+The minimum probability of error (under an equally probable prior) is
 \begin{align}
   \frac{1}{2} \left( 1 - \TV(p^{\otimes n}, q^{\otimes n})\right)
 \end{align}
-
-There is a (not commonly used) Chernoff bound of
+To bound this quantity, there is a (not commonly used) Chernoff bound of
 \begin{align}
   \TV(p^{\otimes n}, q^{\otimes n}) = 1 - e^{-n c(P, Q) + o(n)}
 \end{align}
@@ -69,8 +113,8 @@ where $c(P, Q) = -\log \inf_{\alpha \in [0,1]} \int p^\alpha q^{1-\alpha}$.
 
 We will instead be concerned with bounds involving a different discrepancy
 metric.
-
 \begin{definition}[Squared hellinger distance]
+  The \emph{squared Hellinger distance}
   \begin{align}
     H^2(P, Q)
     &= \ex_Q\left[ \left(1 - \sqrt{\frac{P}{Q}}\right)^2 \right]
@@ -81,6 +125,7 @@ metric.
     &= 1 + 1 - 2 \int \sqrt{PQ}
     = 2 \left( 1 - \int \sqrt{PQ} \right)
   \end{align}
+  It sandwiches total variation distance in the following sense:
   \begin{align}
     0 \leq \frac{1}{2} H^2(P, Q)
     \leq \TV(P, Q)
@@ -90,50 +135,69 @@ metric.
 \end{definition}
 
 \begin{lemma}
-  For any sequence $\{P_n\}$, $\{Q_n\}$, as $n \to \infty$
+  For any sequence $\{p_n\}$, $\{q_n\}$, as $n \to \infty$
   \begin{align}
     \TV(p_n^{\otimes n}, q_n^{\otimes n}) \to 0 &\iff H^2(p_n, q_n) = o(1/n) \\
     \TV(p_n^{\otimes n}, q_n^{\otimes n}) \to 1 &\iff H^2(p_n, q_n) = \omega(1/n)
   \end{align}
-  So $\TV$ is not the right 1D thing to look at, rather $H^2$ is!
+  So $H^2$ provides us with
 \end{lemma}
 
-Let $c_1 = [1:n/2]$ and $c_2 = [n/2+1:n]$,
-$G \sim P_{G \mid X}(\cdot \mid X_0)$ where $X_0$ are the true labels.
+Without loss of generality, let $C_1 = [1:n/2] = \{ v : (\sigma_0)_v = 1\}$
+and $C_2 = [n/2+1:n] = \{ v : (\sigma_0)_v = 2\}$
+where $\sigma_0$ are the true labels.
+Let $G \sim P_{G \mid \sigma}(\cdot \mid \sigma_0)$ be the SSBM graph
+generated from this community assignment.
 
 \begin{definition}[Bad pairs]
-  $\cB(G)
-  = \{ (u,v) :
-    u \in c_1, v \in c_2, P_{G \mid X}(G \mid X_0) \leq P_{G \mid X}(G \mid X_0[u \leftrightarrow v])$,
-    in which case even the MAP estimator cannot return the correct solution.
+  For a community assignment $\sigma \in \{0,1\}^n$, let
+  $\sigma[u \leftrightarrow v]$ denote $\sigma$ except with
+  the community assignments for $u$ and $v$ swapped.
+
+  The \emph{bad pairs} of vertices are
+  \begin{align}
+    \cB(G)
+    = \{ (u,v) :
+      u \in C_1, v \in C_2, \Pr_{G \mid \sigma}[G \mid \sigma_0]
+      \leq \Pr_{G \mid \sigma}[G \mid \sigma_0[u \leftrightarrow v]]
+  \end{align}
 \end{definition}
 
+The reason why these pairs are bad is because if $(u,v) \in \cB(G)$
+then the MAP estimator would assign greater probability
+to the incorrectly swapped $\sigma_0[u \leftrightarrow v]$
+labels than the true $\sigma_0$ labels, therefore:
+\begin{corollary}
+  If $\cB(G)$ is non-empty with non-vanishing probability,
+  then exact recovery is not possible.
+\end{corollary}
+To characterize the bad vertices involved in bad pairs, notice
+that swapping vertices $u$ and $v$ flips the edge probabilities
+$p_{out} \leftrightarrow p_{in}$ for all the edges containing
+$u$ and $v$ \emph{except} for the $(u,v)$ edge (if it exists).
+When $p_{in} > p_{out}$, we have
+\begin{align}
+  \Pr_{G \mid \sigma}[G \mid \sigma_0]
+  \leq\Pr_{G \mid \sigma}[G \mid \sigma_0[u \leftrightarrow v]]
+  \iff
+  d_+(u) + d_+(v) \leq d_-(u \setminus v) + d_-(v \setminus u)
+\end{align}
+This motivates the following definition:
 \begin{definition}[Bad vertices for each community]
-  For $i=1,2$,
+  For $i \in \{1,2\}$, the \emph{bad vertices within community $i$} are
   \begin{align}
-    \cB_i(G) &= \{u,v \in c_ : d_+(u) \leq d_-(u) \leq 1 \}
+    \cB_i(G) &= \{u \in C_i : d_+(u) \leq d_-(u) - 1 \}
   \end{align}
   where $d_+(u) = \#\{\text{edges $u$ has in its own comunity}\}$
   and $d_-(u)$ similarly but with the other community.
 \end{definition}
-
-Consider swawpping $u \leftrightarrow v$. The number of edges that change
-is
-\begin{align}
-  d_+(u) + d_+(v)
-  &\leq d_-(u \setminus v) + d_-(v \setminus u)
-\end{align}
-
-Let $u \in c_1, u \in \cB_1(G)$ and $v \in c_2, v \in cB_2(G)$.
-Then $d_+(u) \leq d_-(u) - 1$ as well as
-$d_+(v) \leq d_-(v) - 1$ which implies
+Notice if $u \in \cB_1(G)$ and $v \in \cB_2(G)$, then
 \begin{align}
   d_+(u) + d_+(v)
   &\leq d_-(u) + d_-(v) - 2
   \leq d_-(u \setminus v) + d_-(v \setminus u)
 \end{align}
-so MAP again fails if we have bad vertices in each community.
-This suggests that our analysis should focus on these bad pairs.
+and therefore $(u,v) \in \cB(G)$ and exact recovery fails.
 
 \begin{lemma}
   $\sqrt{a} - \sqrt{b} < \sqrt{2} \implies \Pr[\exists u \in \cB_1(G)] = 1 - o(1)$

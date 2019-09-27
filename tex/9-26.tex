@@ -1,0 +1,177 @@
+\section{9/26/2019}
+
+\subsection{Spectral method for exact recovery of SSBM}
+
+Last time we showed regime for non-solvability of SSBM.
+Today we will see how a spectral method can be used to show
+solvability of exact recovery in SSBM.
+
+\begin{theorem}
+  Exact recovery in $SSBM(n, 2, p = a\log n / n, q = b \log n / n)$
+  is efficiently solvable if $\lvert \sqrt{a} - \sqrt{b} \rvert > \sqrt{2}$
+  using a spectral method.
+\end{theorem}
+
+\textbf{Algorithm}:
+\begin{itemize}
+  \item Form the modified adjacency matrix $A'$ by adding
+    self loops with probability $p$ to the original adjacency matrix.
+    Then $\ex A'
+    = n \frac{p+q}{2} \bar\phi_1 \bar\phi_1^\top
+    + n \frac{p-q}{2} \bar\phi_2 \bar\phi_2^\top
+    $ where \begin{align}
+      \bar\phi_1 = \frac{1}{\sqrt{n}} \vec{1} \qquad
+      \bar\phi_2 = \frac{1}{\sqrt{n}} \begin{bmatrix}
+        1 \\ 1 \\ \vdots \\ 1 \\ -1 \\ -1 \\ \vdots \\ -1
+      \end{bmatrix}
+    \end{align}
+  \item Define $A = A' - n \frac{p+q}{2} \bar\phi_1 \bar\phi_1^\top$
+  \item Solve largest eigenvector problem: $A \phi = \lambda \phi$.
+  \item Return labels $X_{spec}(i) = 1 \ind\{\phi(i) \geq 0\} + 2 \ind\{\phi(i) < 0\}
+    $.
+\end{itemize}
+
+Define $\bar\phi$ and $\bar\lambda$ by
+\begin{align}
+  \ex A &= n \frac{p-q}{2} \bar\phi_2 \bar\phi_2^\top
+  \coloneqq \bar\lambda \bar\phi \bar\phi^\top
+\end{align}
+
+\begin{lemma}
+  $\Pr[\|A - \bar{A}\|_2 \geq c_1 \sqrt{\log n}] \leq c_2 n^{-3}$,
+  where $c_1$ and $c_2$ depend on $a$ and $b$.
+\end{lemma}
+
+\begin{lemma}[General version of above]
+  Let $A$ be a symmetric zero-diagonal matrix with $\{A_{ij} : i < j\}$
+  independent, $[0,1]$-valued, $\ex A_{ij} \leq p$,
+  $\frac{c_0 \log n}{n} \leq p \leq 1 - c_1$.
+
+  Then, for any $c > 0$, $\exists c' > 0$ such that
+  \begin{align}
+    \Pr[\|A - \ex A\|_2 \leq c' \sqrt{np}] \geq 1 - n^{-c}
+  \end{align}
+\end{lemma}
+
+\begin{remark}
+  The above result is different than what we have seen before.
+  Davis-Kahan gives $\braket{\phi, \bar\phi} = 1 - o(1)$,
+  Latala gives weaker bound beacuse of 4th moment requirement.
+\end{remark}
+
+Instead, we will compare $\phi$ with $A \bar\phi / \bar\lambda$ instead of
+$\bar\phi = \bar{A} \bar\phi / \bar\lambda$.
+\begin{lemma}
+  $\exists$ constant $C(a,b)$ such that as $n \to \infty$
+  \begin{align}
+    \Pr\left[
+      \min_{s \in \{\pm 1\}} \|s \phi - A \bar\phi/\bar\lambda\|_\infty
+      \leq \frac{c}{\sqrt{n} \log \log n}
+    \right] \geq 1 - \frac{c}{n^2}
+  \end{align}
+\end{lemma}
+
+\begin{proof}[Proof assuming lemma]
+  Define events
+  \begin{align}
+    \cE_1 &= \left\{ \min_{i \in [1:n/2]} (A \bar\phi / \bar\lambda)_i \geq \frac{2 \eps}{(a - b)\sqrt{n}},
+    \max_{i \in [n/2+1:n]} (A \bar\phi / \bar\lambda)_i \leq \frac{-2 \eps}{(a-b)\sqrt{n}} \right\} \\
+    \cE_2 &= \left\{ \min_{s \in \{\pm1\}} \|s \phi - A \bar\phi / \bar\lambda \|_\infty
+    \leq \frac{c}{\sqrt{n} \log\log n} \right\}
+  \end{align}
+  Claim: if $\Pr[\cE_1 \cap \cE_2] \to 1$, then problem solved.
+
+  $(A \bar\phi / \bar\lambda)_i \sim B(n/2, p) - B(n/2, q)$ because
+  $\bar\phi$ has its first $n/2$ entries $+1$ and second $n/2$ entries
+  $-1$. Furthermore, since (see last time)
+  \begin{align}
+    \Pr[B(n/2, p) - B(n/2,q) \geq O(1)] = n^{-\left(\frac{\sqrt{a} - \sqrt{b}}{\sqrt{2}}\right)^2 - o(1)}
+  \end{align}
+  Since we are in regime $\sqrt{a} - \sqrt{b} > \sqrt{2}$, by union bound
+  \begin{align}
+    \Pr\left[\exists i : (A \bar\phi / \bar\lambda)_i \leq \frac{2 \eps}{(a-b)\sqrt{n}}
+    \right] \leq n n^{-1 - \Omega(1)} = n^{-\Omega(1)}
+  \end{align}
+  A similar argument handles the $i \in [n/2+1:n]$ to
+  conclude $\Pr[\cE_1] \to 1$. The lemma handles $\cE_2$.
+\end{proof}
+
+\begin{proof}[Proof of lemma]
+  Choose $\phi$ such that $\phi^\top \bar\phi \geq 0$.
+  \begin{align}
+    \|\phi - A \bar\phi / \bar\lambda\|_\infty
+    &\leq \|\phi - A \phi / \bar\lambda\|_\infty
+    + \|A \phi/\bar\lambda - A \bar\phi / \bar\lambda\|_\infty \\
+    &= \|\phi - \lambda / \bar\lambda \cdot \phi\|_\infty
+    + \|\frac{A}{\bar\lambda}(\phi - \bar\phi)\|_\infty \\
+    &= \frac{\lvert \lambda - \bar\lambda \rvert}{\bar \lambda} \|\phi\|_\infty
+    + \frac{1}{\bar\lambda} \|A(\phi - \bar\phi)\|_\infty
+  \end{align}
+  Condition on event $\|A - \bar{A}\|_2 \lesssim \sqrt{\log n}$,
+  by Davis-Kahan $\lvert \lambda - \bar\lambda \rvert \leq \|A - \ex A\|_2 \lesssim \sqrt{\log n}$,
+  and by definition $\bar\lambda \asymp \log n$, so the first term is bounded like
+  $\frac{\|\phi\|_\infty}{\sqrt{\log n}}$.
+
+  The second term is more complicated. Define $n$ auxiliary matrices
+  ($A$ delete row/col $m$)
+  \begin{align}
+    (A^{(m)}_{ij}) = A_{ij} \delta_{i \neq m, j \neq m}
+  \end{align}
+  Let $\phi^{(m)}$ be the leading eigenvector of $A^{(m)}$ and note
+  $(\phi^{(m)})^\top \bar\phi \geq 0$. We defined it like this so
+  \begin{align}
+    (A (\phi - \bar\phi))_m
+    = A_m(\phi - \bar\phi)
+    = A_m (\phi - \phi^{(m)}) + A_m(\phi^{(m)} - \bar\phi)
+  \end{align}
+  where $A_m$ is the $m$th row of $A$.
+  Focusing on the first term for now:
+  \begin{align}
+    \lvert A_m (\phi - \phi^{(m)}) \rvert
+    &\leq \|A_m\|_2 \|\phi - \phi^{(m)}\|_2 \\ &\leq \|A\|_{2 \to \infty} \|\phi - \phi^{(m)}\|_2
+  \end{align}
+
+  We're going to show the following:
+  \begin{align}
+    \|A_m\|_2 \|\phi - \phi^{(m)}\|_2 \leq \sqrt{\log n} \|\phi\|_\infty
+  \end{align}
+  The intuition for this is that we want to first use Davis-Kahan for
+  $\|\phi - \phi^{(m)}\|_2$,
+  \begin{align}
+    \|A_m\|_2
+    = \|A - A^{(m)}\|_2
+    &\leq \|A^{(m)} - A\|_F
+    \leq \sqrt{2} \|A\|_{2 \to \infty}
+    \eqqcolon \max_i \|A_i\|_2  \leq \|A\|_2 \\
+    \|A\|_{2 \to \infty}
+    &\leq \|A - \bar{A}\|_{2 \to \infty} + \|\bar{A}\|_{2 \to \infty} \\
+    &\lesssim \sqrt{\log n} + \frac{\log n}{\sqrt{n}}
+    \lesssim \sqrt{\log n}
+  \end{align}
+
+  By Davis-Kahan
+  \begin{align}
+    \min_{s \in \{\pm 1\}} \|s\phi - \phi^{(m)}\|_2
+    &\lesssim \frac{\|A^{(m)} - A\|_2}{\bar\lambda}
+    \lesssim \frac{1}{\sqrt{\log n}}
+  \end{align}
+  Here the maximum is attained at $s=1$. To see this, recaall old davis-kahan
+  to see
+  \begin{align}
+    \min_s \|s u - v\|_2 &\lesssim \frac{\|A - B\|_2}{\max(\lambda_1(A) - \lambda_2(B), \lambda_1(B) - \lambda_2(A))} \\
+    \min_s \|s u - v\|_2 &\lesssim \frac{\|(A-B)u\|}{\text{max eigengap}}
+  \end{align}
+  Here is a new version of it we will need
+  \begin{align}
+    \|\phi^{(m)} - \phi\|_2
+    &\lesssim \frac{\|(A^{(m)} - A)\phi\|_2}{\bar\lambda} \\
+    \|(A^{(m)} - A)\phi\|_2
+    &= \sqrt{\lambda^2 \lvert \phi_m\rvert^2  + \sum_{i \neq m} A_{im}^2 \phi_m^2}
+    \leq \lvert \phi_m\rvert \sqrt{\lambda^2 + \|A\|_{2 \to \infty}^2}
+    \lesssim \bar\lambda \lvert \phi_m \rvert
+  \end{align}
+
+
+  $\|\phi^{(m)} - \phi\|_\inty \lesssim \lvert \phi_m \rvert \lesssim \|\phi\|_\infty$.
+
+\end{proof}

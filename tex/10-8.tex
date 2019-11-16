@@ -1,0 +1,170 @@
+\section{10/8/2019}
+
+\subsection{Correlated recover of SSBM}
+
+Consider now $SSBM(n,2,p=a/n, q=b/n)$. Notice that
+the scaling for $p$ and $q$ are no longer $\log n / n$,
+which we will see will make exact recovery impossible.
+
+Let $\sigma = (\sigma_1, \ldots, \sigma_n) \in \{\pm 1\}^n$, where
+we consider two models:
+\begin{description}
+  \item[iid sampling] $\sigma_i \sim \Rad$
+  \item[exact bisection] $\sum_{i=1}^n \ind\{\sigma_i = 1\} = \frac{n}{2}$
+\end{description}
+Recall nodes $i$ and $j$ are connected with probability $p$ if $\sigma_i =
+\sigma_j$ and $q$ otherwise. Let $A_{ij} = \ind\{i \sim j\}$ denote
+the adjacency matrix.
+
+\begin{definition}[Correlated Recovery]
+  \begin{align}
+    \min_{s \in \{\pm 1\}} \|\sigma + s \hat\sigma\|_1
+    &= \min_S \sum_{i=1}^n \lvert \sigma_i + s \hat{\sigma}_i \rvert
+    = n \left( 1 - \underbrace{\frac{\lvert \braket{\sigma, \hat\sigma} \rvert}{n}}_{\text{empirical correlation}}\right)
+  \end{align}
+  wlog suppose $s = 1$, then
+  \begin{align}
+    \lvert \sigma_i + \hat\sigma_i\rvert
+    = \begin{cases}
+      0, &\text{ if }\sigma_i \neq \hat\sigma_i \\
+      2, &\text{ if }\sigma_i = \hat\sigma_i
+    \end{cases}
+    = 2 \ind\{\sigma_i = \hat\sigma_i\}
+  \end{align}
+\end{definition}
+
+\begin{theorem}[Mutual information characterization for correlated recovery]
+  Correlated recovery is possible iff $I(\sigma_1, \sigma_2; G) > 0$
+  as $n \to \infty$.
+\end{theorem}
+
+Recall
+\begin{align}
+  I(X; Y)
+  &= D(P_{XY} || P_X P_Y)
+  = \ex_{P_{XY}} \log \frac{P_{XY}(x,y)}{p_X(x) p_Y(y)}
+  = \ex_X[D(P_{Y \mid X} || P_Y)]
+\end{align}
+
+Note $I(\sigma_1, \sigma_2; G) = I(\sigma_1 \cdot \sigma_2; G)$
+beacuse condition on $\sigma_1 = \sigma_2$ or $\sigma_1 \neq \sigma_2$,
+$G$ is independent of $(\sigma_1, \sigma_2)$.
+This is good because $\sigma_1 \sigma_2$ is a binary random variable.
+
+A fundamental result we will use: if $X \sim \Rad$ and we observe $Y$
+\begin{align}
+  \min_{\hat{X}(Y)} \Pr[X \neq \hat{X}(Y)] = \frac{1}{2}(1 - \TV(P_+, P_-))
+\end{align}
+where $P_+ = P_{Y \mid X = +1}$ and $P_- = P_{Y \mind X=-1}$.
+
+\begin{proposition}
+  $\TV(p_+, p_-) = o(1) \iff I(X;Y) \to 0$, so mutual information is a correct
+  way to characterize correlated recovery.
+\end{proposition}
+
+To prove this, we will need Pinsker's inequality:
+\begin{align}
+  I(X;Y)
+  = \ex_X D(P_{Y \mid X} || P_Y)
+  &= \frac{1}{2} D(P_+ || \bar{P}) + \frac{1}{2} D(P_- || \bar{P}) \\
+  &\geq \TV^2(P_+, \bar{P}) + \TV^2(P_-, \bar{P})
+  = \frac{1}{2}  \TV^2(P_+, P_-)
+\end{align}
+
+Recall the relation between KL and chi-squared divergence
+\begin{align}
+  D(P||Q) &= \ex_p \log \frac{p(x)}{q(x)}  \\
+  \chi^2(P||Q) &= \int \frac{(p(x) - q(x))^2}{q(x)} dx \\
+  D(P || Q) &\leq \log(1 + \chi^2(P || Q)) \leq \chi^2(P || Q)
+\end{align}
+Invoking this inequality to upper bound
+\begin{align}
+  I(X;Y)
+  &= \frac{1}{2} D(P_+ || \bar{P}) + \frac{1}{2} D(P_- || \bar{P}) \\
+  &\leq \frac{1}{2} \int \frac{(p + \bar{p})^2}{\bar{p}}  + \frac{1}{2}  \int \frac{(p - \bar{p})^2}{\bar{p}} = \int \frac{(p_+ - p_-)^2}{2 (p_+ + p_-)} \\
+  &\leq \int \frac{1}{2} (p_+ - p_-)
+  = \TV(p_+, p_-)
+\end{align}
+
+Assume for all $i \neq j$, $\exists$ test $\hat{T}_{ij}(G)$ such that
+\begin{align}
+  \Pr[\hat{T}_{ij} = \sigma_i \sigma_j \eqqcolon T_{ij}] \geq \frac{1}{2}  + \delta, \qquad \delta > 0
+\end{align}
+Define estimator $\hat{\sigma}_1 = +1$, $\hat\sigma_i = \hat{T}_{1i}$ for $i=2,\ldots,n$.
+\begin{align}
+  \max_{s \in \{\pm 1\}} \sum_i \Pr[\sigma_i = s \hat\sigma_i]
+  \geq \sum_i \Pr[T_{1i} =\hat{T}_{1i}] \geq \left(\frac{1}{2}  + \delta\right) n
+\end{align}
+
+To show equivalence between $\TV$, mutual information, and correlated recovery, it remains to show:
+if $\TV(p_+, p_-) = o(1)$ then correlated recover is impossible.
+
+For any estimator $\hat\sigma$
+\begin{align}
+  \ex[\|\sigma \sigma^\top - \hat\sigma \hat\sigma^\top\|_F^2]
+  &=  4 \sum_{i \neq j} \Pr[\sigma_i \sigma_j \neq \hat\sigma_i \hat\sigma_j]
+  = 2 n^2 - o(n^2) \\
+  \implies \ex[\lvert \braket{\hat\sigma, \sigma}\rvert^2] &= o(1)
+
+\end{align}
+
+\begin{theorem}
+  Let $\tau = \frac{(a-b)^2}{2(a+b)}$. Suffices to show $\TV(p_+, p_-) = o(1)$
+  if $\tau < 1$.
+
+  Variational characterization of $\TV(P,Q)$:
+  \begin{align}
+    \TV(P,Q) &= \frac{1}{2} \inf_R \sqrt{\int \frac{(P-Q)^2}{R} }
+  \end{align}
+  because by Cauchy-Schwarz
+  \begin{align}
+    \int \frac{(P-Q)^2}{R}
+    = \int \left(\frac{P-Q}{\sqrt{R}} \right)^2 \int (\sqrt{R})^2
+    \geq \left(\int \lvert P - Q \rvert\right)^2 = 4 \TV^2(P,Q)
+  \end{align}
+  Pick $R^* = \frac{\lvert P - Q \rvert}{S \lvert P - Q \rvert} $.
+  \begin{align}
+    \int \frac{(P_+ - P_-)^2}{R}
+    &= \int \frac{P_+^2 + P_-^2 - 2 P_+ P_-}{R}
+    = \int \frac{p_+^2}{R}  + \int \frac{p_-^2}{R}  - 2 \int \frac{p_+ p_-}{R}
+    \overset{\text{todo}}{=} o(1)
+  \end{align}
+  Suffices to show $\int \frac{p_z p_{\tilde{z}}}{R} = C + o(1)$ for all
+  $z,\tilde{z} \in \{\pm1\}$.
+
+  Fubini: $\int \frac{p_z p_{\tilde{z}}}{R}
+  = \int \frac{\int p_{z,\theta}(x) \pi(d\theta) \int p_{\tilde{z},\tilde\theta} \pi(d\tilde\theta)}{R(X)} dx
+    = \int \pi(d\theta) \pi(d\tilde\theta) \int \frac{p_{z,\theta}(x) p_{\tilde{z}, \tilde{\theta}}(x)}{R(x)} dx$
+
+    We will take $\theta = \sigma$ and $\tilde\theta = \tilde\sigma$,
+    with $P = \text{Bern}(p)$ and $Q = \text{Bern}(q)$.
+    \begin{align}
+      \Pr[A \mid \sigma]
+      &= \prod_{i < j} (Q \ind\{\sigma_i = \sigma_j\} + Q \ind\{\sigma_i \neq \sigma_j\})
+      = \prod_{i < j} \left( \frac{P+Q}{2}  + \frac{P-Q}{2} \sigma_i \sigma_j\right)
+    \end{align}
+    Pick $R$ to be $G(n, (a+b)/(2n))$
+    \begin{align}
+      \int \frac{P_\sigma P_{\tilde{\sigma}}}{R}
+      &= \prod_{i < j} (1 + \rho \sigma_i \sigma_j \hat\sigma_i \hat\sigma_j)
+    \end{align}
+    with $\rho = (\tau + o(1)) / n$. Our goal is
+    \begin{align}
+      \ex[\prod_{i < j} (1 + \rho \sigma_i \sigma_j \hat\sigma_i \hat\sigma_j)
+        \mid \sigma_1 \sigma_2 = z, \hat\sigma_1 \hat\sigma_2 = \tilde{z}]
+    \end{align}
+    \begin{align}
+      P_Z(X) &= P(A \mid \sigma_1 \sigma_2 = z) \\
+             &= \ex[\prod_{i < j} e^{\rho \sigma_i \sigma_j \hat\sigma_i \hat\sigma_j - \frac{\rho^2}{2}  + O(\rho^3)} \mid \cdots ] \\
+             &= e^{\frac{n(n-1)}{2} (-\rho^2 / 2)} \ex e^{\sum_{i < j} \rho \sigma_i \sigma_j \hat\sigma_i \hat\sigma_j + o(n^{-3})} \mid \cdots] \\
+             &= e^{-\frac{\tau^2}{4}  - \frac{\tau}{2}}
+             \ex\left[ \exp\left(
+               \frac{\tau + o(1)}{2} \left(
+                 \frac{1}{n} \left(
+                   \sum_{i=1}^n \sigma_i \hat\sigma_i
+               \right)^2\right)
+             \right)
+           \mid \sigma_1 \sigma_2 = z, \hat\sigma_1 \hat\sigm_2 = \tilde{z} \right]
+    \end{align}
+  Note that by CLT $\frac{\sum_{i=1}^n \sigma_i \hat\sigma_i}{\sqrt{n}} \Rightarrow N(0,1)$.
+\end{theorem}

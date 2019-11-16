@@ -1,0 +1,237 @@
+\section{10/3/2019}%
+
+Exact recovery for General SBM.
+
+Adjacency matrix
+\begin{align}
+  A_{ij} \sim \begin{cases}
+    P, &\text{ if }\sigma_i = \sigma_j\\
+    Q, &\text{ if }\sigma_i \neq \sigma_j\\
+  \end{cases}
+\end{align}
+$1 \leq i < j \leq n$, $A$ symmetric matrix with zero diagonal.
+Now $P$ and $Q$ are arbitrary (previously Bernoulli).
+
+Let $\sigma = (\sigma_1,\ldots,\sigma_n) \in \{\pm 1\}^n$ be the true
+labels and $\hat\sigma$ our estimate.
+
+We are in the bisection model: exactly half of $\sigma_i$ is $1$
+and the other is $-1$.
+
+Exact recovery means that
+\begin{align}
+  \Pr[\sigma = \hat\sigma \cup \sigma = -\hat\sigma] \to 1
+\end{align}
+as $n \to \infty$. Sign errors are OK because of bisection model.
+
+
+log likelihood ration matrix
+\begin{align}
+  \log \Pr[A \mid \sigma]
+  &= \sum_{1 \leq i < j \leq n} \log \Pr[A_{ij} \mid \sigma] \\
+  &= \sum \log P(A_{ij}) \ind\{\sigma_i = \sigma_j\}
+  + \log Q(A_{ij}] \ind\{\sigma_i \neq \sigma_j\} \\
+  &= \sum \frac{\log P(A_{ij})  + \log Q(A_{ij})}{2}
+  + \frac{\log P(A_{ij}) - \log Q(A_{ij})}{2} \sigma_i \sigma_j
+\end{align}
+So dependence on $\sigma$ is only on the latter term, which
+motivates us to define
+\begin{align}
+  W_{ij} &= \begin{cases}
+    \log \frac{P(A_{ij})}{Q(A_{ij})} , &\text{ if }i \neq j\\
+    0, &\text{ if } i=j
+  \end{cases}
+\end{align}
+The MLE is
+\begin{align}
+  \max_{\sigma \in \{\pm 1\}^n} \sigma^\top W \sigma
+\end{align}
+
+To turn into computationally efficient algorithm, let
+$X = \sigma \sigma^\top$ so $\sigma^\top W \sigma = \braket{W, X}$.
+
+Relax the (rank one and $\{\pm 1\}$ entries) constraints on $X$
+to get min-bisection SDP
+\begin{align}
+  \max~&\braket{W, X} \\
+  \text{st}~&X \succeq 0 \\
+  &\diag(X) = I_n \\
+  &\braket{X, J} = 0, J = 1 1^\top
+\end{align}
+The second inequality follows from $X_{ii} = \sigma_i^2 = 1$
+and the last from bisection since $\braket{X, J} = 1^\top X 1 = 1^\top \sigma \sigma^\top 1 = (1^\top \sigma)^2 = 0$.
+
+\begin{theorem}
+  Suppose $H^2(P, Q) \geq \frac{2 (1 + \eps) \log n}{n}$,
+  $\|W - \ex W\|_{op} = o(\log n)$ for fixed $\eps \in (0,1)$.
+
+  Then whp the unique solution to the min-bisection SDP
+  is $\sigma \sigma^\top$.
+\end{theorem}
+
+\begin{example}[Bernoulli example]
+  $P = \text{Bern}(a \log n / n)$
+  and $Q = \text{Bern}(b \log n / n)$.
+  \begin{align}
+    H^2(P, Q) &= \int (\sqrt{p(x)} - \sqrt{q(x)})^2 dx \\
+    &= (\sqrt{p} - \sqrt{q})^2 + (\sqrt{1-p} - \sqrt{1 - q})^2 \\
+    &= (\sqrt{a} - \sqrt{b})^2 \frac{\log n}{n} (1 + o(1))
+  \end{align}
+  So comparing against the $H^2 \geq \frac{(1+\eps) 2 \log n}{n}$ required
+  by the theorem, we recover the thereshold from last time
+  \begin{align}
+    (\sqrt{a} - \sqrt{b})^2 > 2
+  \end{align}
+
+  But the theorem also has a requirement $\|W - \ex W\|_{op} = o(\log n)$
+  which we can verify in this example. In this case
+  \begin{align}
+    W_{ij} 
+    &= \log \frac{p}{q} \ind\{A_{ij} = 1\} + \log \frac{1-p}{1-q} \ind\{A_{ij} = 0\} \\
+    &= \log \frac{p (1-q)}{q (1-p)} A_{ij} + \log \frac{1-p}{1-q}
+  \end{align}
+  Relate concentration of $A$ with concentration of $W$:
+  \begin{align}
+    W - \ex W 
+    &= \log \frac{p (1 - q)}{q (1 - p)} (A - \ex A)
+  \end{align}
+  We know from last time $\|A - \ex A\|_{op} \lesssim \sqrt{\log n}$,
+  so the condition holds after checking 
+  $\log \frac{p(1-q)}{q(1-p)} = o(\sqrt{\log n})$.
+\end{example}
+
+\begin{lemma}[KKT condition + uniqueness]\label{lem:kkt-plus-uniq}
+  $X^* = \sigma \sigma^\top$ is the unique maximizer of min-bisection
+  SDP if the following holds:
+  \begin{itemize}
+    \item Stationarity: $\exists D = \diag(d_1, \ldots, d_n)$
+      $S \succeq 0$, and $\lambda \in \RR$ such that
+      \begin{align}
+        S = D - W + \lambda J
+      \end{align}
+      where $J = 1 1^\top$.
+    \item Complementary slackness: $S \sigma = 0$.
+    \item Uniqueness: $\lambda_{n-1}(S) > 0$ where
+      $\lambda_{n-1}$ is the second smallest eigenvalue.
+  \end{itemize}
+\end{lemma}
+
+\begin{proof}
+  We first show maximality. Write Lagrangian
+  \begin{align}
+    L(X, D, S, \lambda)
+    &= \braket{W, X} + \braket{S, X}
+    + \Tr ((I - X)D) - \lambda \braket{J, X} \\
+  \end{align}
+  Dual cone of PSD cone is PSD cone, so $S \succeq 0$. First-order
+  stationarity condition is
+  \begin{align}
+    0 
+    = \frac{\pd L}{\pd X}
+    = W + S - D - \lambda J
+  \end{align}
+  For any $X$ feasible
+  \begin{align}
+    \braket{W, X}
+    &\leq L(X, D, S, \lambda)
+    = L(X^*, D, S, \lambda)
+    = \braket{W, X^*}
+  \end{align}
+  where the first equality follows from $0 = \frac{\pd L}{\pd X}$
+  and the second from feasibility removing all the constraint terms
+  of the Lagrangian and
+  complementary slackness implying
+  $\braket{S, X^*} = \sigma^\top \underbrace{S \sigma}_{=0}$.
+
+  Now we show uniqueness. Suppose $\braket{W, X} = \braket{W, X^*}$
+  for some feasible $X$. Then $\braket{S, X} = 0$,
+  but the uniqueness condition of the lemma ensures that $\sigma$
+  is the unique eigenvector of $S$ with eigenvalue $0$ so
+  $X = c X^*$.
+  But since $\diag(X) = I_n$, we have in fact $c = 1$.
+\end{proof}
+
+\begin{align}
+  \cancelto{0}{S \sigma}
+  &= D \sigma - W \sigma + \cancelto{0}{\lambda J \sigma} \\
+  D \sigma &= W \sigma \\
+  (D \sigma)_i &= d_i \sigma_i = (W \sigma)_i = \sum_j W_{ij} \sigma_j \\
+  d_i &= \sum_j W_{ij} \sigma_j \sigma_i
+\end{align}
+so we have already found dual variable $D$ directly from primal variables.
+
+To use the last uniqueness condition:
+\begin{align}
+  \inf_{x \perp \sigma, \|x\|=1} x^\top(D - W + \lambda J) x > 0
+\end{align}
+$W$ is a random matrix; we would like to replace it with
+deterministic $\ex W$ without affecting solution too much.
+\begin{align}
+  \lvert x^\top (W - \ex W) x \rvert
+  &\leq \|W - \ex W\|_{op} 
+  = o(\log n)
+\end{align}
+so it suffices to show
+\begin{align}
+  \inf_{x \perp \sigma, \|x\|_2 = 1} x^\top (D - \ex W + \lambda J) x \gtrsim \log n
+\end{align}
+Let $s = D(P || Q)$ and $t = D(Q || P)$. Then
+\begin{align}
+  \ex W &= \frac{s - t}{2} J + \frac{s + t}{2} \sigma \sigma^\top - s I_n
+\end{align}
+So in fact it suffices to show
+\begin{align}
+  \inf_{x \perp \sigma, \|x\|_2 = 1} x^\top (D - \frac{s-t}{2} J + \lambda J) x \gtrsim \log n
+\end{align}
+Choose $\lambda \geq \frac{s-t}{2}$, so it suffices to show
+whp
+\begin{align}
+  \min_i d_i \geq \eps (1 + \eps) \log n
+\end{align}
+
+Recall
+\begin{align}
+  d_i = \sum_j W_{ij} \sigma_i \sigma_j
+\end{align}
+By assumption $H^2(P, Q) \geq \frac{2(1+\eps) \log n}{n}$, so
+it suffices (after applying union bound) to show
+\begin{align}
+  \Pr[d_i \leq c \log n] = o(1/n)
+\end{align}
+with $c = \frac{\eps n H^2(P, Q)}{2 \log n}$.
+
+Let $X \overset{d}{=} \log \frac{dP(Z)}{dQ(Z)}$ with $Z \sim P$
+and $Y$ similarly except with $Z \sim Q$. Then
+\begin{align}
+  d &\overset{d}{=} \sum_{i=1}^{n/2} X_i - \sum_{i=1}^{n/2} Y_i \\
+  \ex d &= k D(P||Q) + (n-k) D(Q||P)
+\end{align}
+
+Recall cumulant generating functions:
+\begin{align}
+  \psi_p(\theta) 
+  &= \log \ex_{X \sim p} \exp(\theta X)
+  = \log \int P^{1+\theta}Q^{-\theta} \\
+  \psi_q(\theta)
+  &= \log \int P^\theta Q^{1-\theta} = \psi_p(\theta-1)
+\end{align}
+To get the desired high probability bounds, we do Chernoff:
+\begin{align}
+  \Pr[d \leq c \log n]
+  &= \Pr\left[
+    \sum_{i=1}^{n/2} Y_i - \sum_{i=1}^{n/2} X_i \geq -c \log n
+  \right] \\
+  &= \Pr\left[
+    \exp(\theta(\sum Y_i - \sum X_i)) \geq \exp(-\theta c \log n)
+  \right] \\
+  &\leq \ex \exp( \theta (\sum Y_i - \sum X_i) + \theta c \log n) \\
+  &= \exp( (n/2) \psi_p(\theta - 1) + (n/2) \psi_p(-\theta) + \theta c \log n)
+\end{align}
+Choosing $\theta = -\frac{1}{2}$ connects this with $H^2$, but why is this
+a good choice? CGF $\psi$ is convex so Jensen's
+\begin{align}
+  \psi(\theta - 1) + \psi(-\theta)
+  \geq 2 \psi \left( \frac{\theta - 1 + (-\theta)}{2}\right)
+  = 2 \psi(-1/2)
+\end{align}
+so in fact $\theta = 1/2$ makes Jensen's tight.
